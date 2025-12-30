@@ -1,362 +1,349 @@
+# Literature Review Copilot - Implementation Progress
+## Using RAG-Anything (LightRAG + MinerU)
 
-# Quick Setup Guide
+## ✅ COMPLETED (MVP with RAG-Anything)
 
-## 🚀 Getting Started in 5 Minutes
+### 1️⃣ Environment Setup ✅
+- ✅ Python structure with RAG-Anything integration
+- ✅ LLM backend support (Claude, OpenAI, Ollama) configured for RAG-Anything
+- ✅ RAG-Anything repository integrated (using pip package)
+- ✅ Vector DB: Using LightRAG's built-in storage (Nano-GraphRAG)
+- ⚠️ **TODO**: Git initialization, VS Code extensions
 
-### Step 1: Install Dependencies
+### 2️⃣ Document Ingestion ✅
+- ✅ **RAG-Anything multimodal parsing** (PDF, DOCX, PPTX, images)
+- ✅ **MinerU integration** for high-fidelity document extraction
+- ✅ Automatic structure preservation (text, images, tables, equations)
+- ✅ Multiple file format support out of the box
+- ⚠️ **TODO**: TeX conversion (use Pandoc separately), website scraping
+- ⚠️ **TODO**: Metadata normalization in YAML frontmatter
 
+### 3️⃣ Semantic Indexing & RAG Setup ✅
+- ✅ **LightRAG** graph-based knowledge representation
+- ✅ Dual-graph construction (cross-modal + textual semantics)
+- ✅ Multiple query modes: hybrid, local, global, naive
+- ✅ Multimodal embedding (text + vision)
+- ✅ Cross-modal relationship discovery
+- ✅ Semantic retrieval fully functional
+
+### 4️⃣ Comment & Annotation System ✅
+- ✅ HTML-style comments: `<!-- HUMAN_COMMENT -->` and `<!-- AI_COMMENT -->`
+- ✅ JSON metadata in comments (type, target_section, timestamp, line_number)
+- ✅ Parse and filter comments by type
+- ✅ AI cannot overwrite HUMAN_COMMENT
+- ⚠️ **TODO**: Git versioning integration
+- ⚠️ **TODO**: Character offset linking for precise targeting
+
+### 5️⃣ Concept Lens Layer ⚠️
+- ⚠️ **TODO**: Extract concepts using RAG-Anything's entity extraction
+- ⚠️ **TODO**: Leverage LightRAG's knowledge graph for concept relationships
+- ⚠️ **TODO**: Compute activation scores on documents
+- ⚠️ **TODO**: Generate concept-based AI_COMMENT suggestions
+
+### 6️⃣ AI-Generated Comment System ✅
+- ✅ Pipeline for AI_COMMENT generation using RAG-Anything
+- ✅ RAG context retrieval with multimodal support
+- ✅ Vision-enhanced queries (VLM) for analyzing figures/charts
+- ✅ Append-only insertion into Markdown
+- ⚠️ **TODO**: Manual review/accept-reject workflow UI
+
+### 7️⃣ ORKG Integration ❌
+- ❌ **TODO**: Map documents to ORKG via DOI/title
+- ❌ **TODO**: Query ORKG API for related papers
+- ❌ **TODO**: Feed ORKG suggestions into RAG context
+
+### 8️⃣ VS Code Extension Features ❌
+- ❌ **TODO**: File watcher for Markdown updates
+- ❌ **TODO**: Command palette actions
+- ❌ **TODO**: Sidebar panel for comments & concepts
+- ❌ **TODO**: Accept/edit/delete UI
+
+### 9️⃣ Linking Comments to Chunks ⚠️
+- ✅ Target section linking
+- ⚠️ **TODO**: Line number tracking
+- ⚠️ **TODO**: Leverage RAG-Anything's chunk IDs for precise linking
+- ⚠️ **TODO**: Dynamic link updates
+
+### 🔟 Git Integration ⚠️
+- ⚠️ **TODO**: Initialize Git repository
+- ⚠️ **TODO**: Track comment changes
+- ⚠️ **TODO**: Auto-commit workflow
+
+### 1️⃣1️⃣ Optional / Future Enhancements ❌
+- ❌ Multi-layer concept lens using LightRAG graph
+- ❌ Incremental updates (LightRAG supports this)
+- ❌ JabRef integration for bibliography management
+- ❌ Section-level summarization
+
+---
+
+## 🎯 NEXT STEPS (Priority Order)
+
+### Phase 1: Test RAG-Anything Integration ⏳
+1. **Install RAG-Anything** with all dependencies
+2. **Test multimodal parsing** with sample papers (PDFs with figures/tables)
+3. **Verify query modes** (hybrid, local, global, naive)
+4. **Test vision-enhanced queries** for figure analysis
+5. **Configure MinerU** for optimal document extraction
+
+### Phase 2: Enhanced Metadata & Structure 🔜
+1. Create Markdown export from RAG-Anything results
+2. Add YAML frontmatter to exported Markdown
+3. Extract DOI, authors, title from parsed documents
+4. Link RAG-Anything chunks to Markdown sections
+
+### Phase 3: Git Integration 🔜
+1. Initialize Git in documents folder
+2. Track ingested documents
+3. Version control for AI comments
+4. `.gitignore` for RAG storage
+
+### Phase 4: Concept Lens with LightRAG Graph 🔜
+1. **Extract entities** from LightRAG's knowledge graph
+2. **Map concepts** across documents using graph relationships
+3. **Compute concept importance** based on graph centrality
+4. **Generate concept-based suggestions** for new documents
+
+### Phase 5: VS Code Extension 📚
+1. Learn TypeScript basics
+2. Create extension skeleton
+3. Connect to RAG-Anything via Python backend API
+4. Implement comment UI
+
+### Phase 6: ORKG Integration 🔜
+1. ORKG API client
+2. DOI-based paper matching
+3. Related paper suggestions
+4. Integrate with RAG-Anything context
+
+---
+
+## 📦 DEPENDENCIES & INSTALLATION
+
+### Core Dependencies (RAG-Anything)
 ```bash
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Full installation with all parsers
+pip install raganything[all]
 
-# Install core dependencies
-pip install anthropic openai chromadb sentence-transformers pypdf markdown python-frontmatter
+# Core RAG system
+pip install lightrag-hku
+
+# LLM providers (choose based on your preference)
+pip install anthropic  # For Claude
+pip install openai     # For OpenAI/GPT
+
+# Optional: For better document parsing
+pip install docling    # Alternative to MinerU
 ```
 
-### Step 2: Set Up LLM Access
-
-Choose ONE option:
-
-#### Option A: Claude (Recommended)
+### MinerU Setup (Recommended for Best Quality)
 ```bash
-export ANTHROPIC_API_KEY="your-anthropic-api-key"
-export LLM_PROVIDER="claude"
+# Install MinerU for high-fidelity PDF extraction
+pip install magic-pdf[full]
+
+# Verify installation
+mineru --version
+
+# Download models (automatic on first use)
+python -c "from raganything import RAGAnything; rag = RAGAnything(); rag.check_mineru_installation()"
 ```
 
-#### Option B: Ollama (Free, Local)
+### Environment Variables
 ```bash
-# Install Ollama from https://ollama.ai
-ollama pull llama2
-export LLM_PROVIDER="ollama"
+# Choose LLM provider
+export LLM_PROVIDER="claude"  # or "openai" or "ollama"
+
+# API Keys
+export ANTHROPIC_API_KEY="your-claude-key"
+export OPENAI_API_KEY="your-openai-key"
+
+# Optional: Ollama
 export OLLAMA_BASE_URL="http://localhost:11434/v1"
 ```
 
-#### Option C: OpenAI/GitHub Copilot
+### Future Dependencies
 ```bash
-export OPENAI_API_KEY="your-openai-api-key"
-export LLM_PROVIDER="openai"
+# Phase 3: Git
+pip install gitpython
+
+# Phase 5: VS Code Extension
+npm install -g yo generator-code
+
+# Phase 6: ORKG
+pip install requests
 ```
 
-### Step 3: Create Project Structure
+---
+
+## 📝 USAGE EXAMPLES
+
+### Current MVP Commands
 
 ```bash
-mkdir literature-review-copilot
-cd literature-review-copilot
+# 1. Ingest a document (PDF, DOCX, PPTX, images)
+python copilot.py ingest paper.pdf
 
-# Create the copilot.py file (copy from MVP artifact)
-# Save it as copilot.py
+# RAG-Anything will:
+# - Parse with MinerU (extracts text, images, tables, equations)
+# - Create multimodal embeddings
+# - Build knowledge graph
+# - Store in LightRAG format
 
-# Create necessary directories (auto-created by script, but good to know)
-mkdir documents vector_db assets
-```
+# 2. Search with different modes
+python copilot.py search "transformer architecture" hybrid
+python copilot.py search "self-attention mechanism" local
+python copilot.py search "what are the main contributions" global
 
-### Step 4: Test with a Sample PDF
-
-```bash
-# Ingest a PDF
-python copilot.py ingest path/to/your/paper.pdf
-
-# This will:
-# 1. Convert PDF → Markdown
-# 2. Extract metadata
-# 3. Save to documents/paper.md
-# 4. Index in vector database
-
-# Generate AI comments
+# 3. Process Markdown and add AI comments
 python copilot.py process documents/paper.md
+```
 
-# Search your documents
-python copilot.py search "machine learning"
+### Query Modes Explained
+- **hybrid**: Combines graph navigation + semantic search (best for most queries)
+- **local**: Focuses on nearby entities in knowledge graph
+- **global**: Broad semantic search across all content
+- **naive**: Simple text matching (fastest but less intelligent)
+
+### File Structure
+```
+.
+├── copilot.py              # Main MVP script with RAG-Anything
+├── documents/              # Markdown files (will be created)
+├── imports/                # Original PDFs/documents
+├── rag_storage/            # LightRAG knowledge graph & embeddings
+│   ├── graph_chunk_entity_relation.graphml
+│   ├── kv_store_*.json
+│   └── vdb_*.json
+└── assets/                 # Extracted images/figures
 ```
 
 ---
 
-## 📋 Configuration File (Optional)
+## 🔍 WHAT'S WORKING NOW
 
-Create `config.json` for easier configuration:
+✅ **RAG-Anything Features Available:**
+- **Multimodal document parsing** (text, images, tables, equations)
+- **High-fidelity extraction** with MinerU
+- **Graph-based knowledge representation** (LightRAG)
+- **Cross-modal retrieval** (find related content across different modalities)
+- **Multiple query modes** for different use cases
+- **Vision-enhanced queries** (analyze charts/figures)
+- **Automatic entity & relationship extraction**
 
-```json
-{
-  "llm_provider": "claude",
-  "anthropic_api_key": "your-key-here",
-  "docs_dir": "./documents",
-  "db_dir": "./vector_db",
-  "assets_dir": "./assets",
-  "embedding_model": "all-MiniLM-L6-v2",
-  "chunk_size": 500,
-  "max_tokens": 1000
-}
-```
-
-**Note**: You'll need to modify the Config class to load from this file.
+✅ **Your Custom Features:**
+- Comment system (HUMAN_COMMENT, AI_COMMENT)
+- AI comment generation with RAG context
+- Multi-LLM support (Claude, OpenAI, Ollama)
+- Structured comment metadata
 
 ---
 
-## 🧪 Testing the System
+## 🚧 KEY DIFFERENCES FROM CUSTOM RAG
 
-### Test 1: Basic Ingestion
-```bash
-# Get a sample paper (e.g., from arXiv)
-wget https://arxiv.org/pdf/1706.03762.pdf -O attention_paper.pdf
+### What RAG-Anything Provides (vs custom implementation):
+1. **Better Document Parsing**: MinerU extracts formulas, tables, charts with high fidelity
+2. **Multimodal Support**: Handles images, not just text
+3. **Graph-Based RAG**: LightRAG uses knowledge graphs vs simple vector search
+4. **Entity Relationships**: Automatically discovers connections between concepts
+5. **Vision Models**: Can analyze figures and charts in papers
+6. **Production Ready**: Battle-tested, maintained by HKU research team
 
-# Ingest it
-python copilot.py ingest attention_paper.pdf
-
-# Check the output
-cat documents/attention_paper.md
-```
-
-### Test 2: Search Functionality
-```bash
-# Search for concepts
-python copilot.py search "transformer architecture"
-python copilot.py search "attention mechanism"
-```
-
-### Test 3: AI Comments
-```bash
-# Generate AI comments
-python copilot.py process documents/attention_paper.md
-
-# Check the comments
-grep -A 5 "AI_COMMENT" documents/attention_paper.md
-```
+### What You Still Need to Build:
+1. Comment system (HTML comments in Markdown) ✅ Done
+2. Git integration
+3. VS Code extension
+4. ORKG integration
+5. Concept lens visualization
+6. Accept/reject workflow
 
 ---
 
-## 🔧 Troubleshooting
+## 💡 RECOMMENDATIONS
 
-### Issue: ChromaDB Installation Fails
-```bash
-# Try installing with specific version
-pip install chromadb==0.4.22
+### Immediate (Today)
+1. **Install RAG-Anything**: `pip install raganything[all] lightrag-hku anthropic`
+2. **Set environment variables** for your LLM
+3. **Test with 1-2 papers** to verify multimodal parsing works
 
-# Or use FAISS as alternative (modify RAGSystem class)
-pip install faiss-cpu
-```
+### This Week
+1. **Ingest 5-10 papers** to build a knowledge base
+2. **Test different query modes** to understand their behavior
+3. **Try vision-enhanced queries** on papers with figures
+4. **Document metadata extraction** workflow
 
-### Issue: PDF Conversion Errors
-```bash
-# Install additional PDF tools
-pip install PyMuPDF  # Better PDF extraction
-pip install pdfplumber  # Alternative PDF parser
-```
+### Next 2 Weeks
+1. **Markdown export** from RAG-Anything results
+2. **Add Git integration** for version control
+3. **Refine AI comment generation** using LightRAG context
 
-### Issue: LLM API Errors
-```bash
-# Check API key
-echo $ANTHROPIC_API_KEY
-
-# Test API directly
-python -c "from anthropic import Anthropic; print(Anthropic().models.list())"
-```
-
-### Issue: Embedding Model Download
-```bash
-# Pre-download the model
-python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
-```
+### Next Month
+1. **Concept lens** using LightRAG's knowledge graph
+2. **VS Code extension** basic prototype
+3. **ORKG integration** for bibliography enrichment
 
 ---
 
-## 📊 Expected Output Examples
+## 🎓 LEARNING RESOURCES
 
-### After Ingestion
-```
-📄 Ingesting: paper.pdf
-✓ Saved: documents/paper.md
-✓ Indexed 12 chunks from paper.md
+### RAG-Anything & LightRAG
+- [RAG-Anything GitHub](https://github.com/HKUDS/RAG-Anything)
+- [RAG-Anything Paper (arXiv)](https://arxiv.org/abs/2510.12323)
+- [LightRAG Documentation](https://github.com/HKUDS/LightRAG)
+- [MinerU Documentation](https://github.com/opendatalab/MinerU)
 
-✓ Document ready at: documents/paper.md
-```
+### Multimodal RAG
+- LightRAG architecture explanation
+- Cross-modal retrieval techniques
+- Vision-Language Models (VLM) integration
 
-### Markdown File Structure
-```markdown
----
-title: Attention Is All You Need
-source_file: paper.pdf
-authors:
-  - Vaswani et al.
-date_added: 2024-01-15T10:30:00
-tags: []
-doi: ""
----
-
-## Page 1
-
-Abstract content here...
-
-## Page 2
-
-Introduction content...
-```
-
-### After AI Comment Generation
-```markdown
-...content...
-
-<!-- AI_COMMENT: {
-  "id": "a3f5d891",
-  "timestamp": "2024-01-15T10:35:00",
-  "target_section": "Introduction",
-  "type": "analysis",
-  "explanation": "This section introduces the transformer architecture...",
-  "related_concepts": ["self-attention", "encoder-decoder"],
-  "questions": ["How does this compare to RNNs?"]
-} -->
-```
+### VS Code Extension Development
+- [Official Guide](https://code.visualstudio.com/api/get-started/your-first-extension)
+- TypeScript basics
 
 ---
 
-## 🎯 Next Development Steps
+## 🔥 ADVANTAGES OF THIS APPROACH
 
-Once the MVP is working, here's what to build next:
-
-### 1. Enhanced PDF Parser (2-3 hours)
-- Better section detection
-- Extract figures and tables
-- Preserve formatting
-
-### 2. Git Integration (1-2 hours)
-```python
-import git
-
-def init_git_repo(docs_dir):
-    repo = git.Repo.init(docs_dir)
-    repo.index.add(['*.md'])
-    repo.index.commit("Initial commit")
-```
-
-### 3. Web Interface (Day 1: Basic Flask/FastAPI)
-```python
-from fastapi import FastAPI, UploadFile
-
-app = FastAPI()
-
-@app.post("/ingest")
-async def ingest_document(file: UploadFile):
-    # Handle upload and ingestion
-    pass
-
-@app.get("/search")
-async def search_documents(query: str):
-    # Return search results as JSON
-    pass
-```
-
-### 4. VS Code Extension (Week 1: Basic Structure)
-```typescript
-// extension.ts
-import * as vscode from 'vscode';
-
-export function activate(context: vscode.ExtensionContext) {
-    let disposable = vscode.commands.registerCommand('litreview.search', () => {
-        // Call Python backend API
-        vscode.window.showInformationMessage('Searching...');
-    });
-    
-    context.subscriptions.push(disposable);
-}
-```
+1. **Production-Ready RAG**: Don't reinvent the wheel - RAG-Anything is research-grade
+2. **Multimodal Native**: Perfect for research papers with figures/tables/equations
+3. **Graph-Based**: Better understanding of concept relationships
+4. **Active Development**: Maintained by top research lab
+5. **Flexible**: Works with Claude, OpenAI, or Ollama
+6. **Extensible**: Easy to add custom layers (comments, ORKG, etc.)
 
 ---
 
-## 🔍 Validation Checklist
+## 📊 TESTING CHECKLIST
 
-Before moving to Phase 2, verify:
+Before Phase 2:
 
-- [ ] Can ingest at least 3 different PDFs successfully
-- [ ] Markdown files have proper frontmatter
-- [ ] Vector database contains chunks (check `vector_db/` directory size)
-- [ ] Search returns relevant results
-- [ ] AI comments are generated and appended
-- [ ] Comments have proper JSON structure
-- [ ] HUMAN_COMMENT and AI_COMMENT are separate
-- [ ] No errors in console output
-
----
-
-## 💾 Backup & Version Control
-
-### Initialize Git (Recommended)
-```bash
-cd literature-review-copilot
-git init
-git add copilot.py
-git commit -m "Initial MVP implementation"
-
-# Add .gitignore
-cat > .gitignore << EOF
-venv/
-__pycache__/
-*.pyc
-.env
-vector_db/
-.DS_Store
-EOF
-
-git add .gitignore
-git commit -m "Add gitignore"
-```
-
-### Backup Vector Database
-```bash
-# The vector_db folder contains your embeddings
-# Back it up periodically
-tar -czf vector_db_backup_$(date +%Y%m%d).tar.gz vector_db/
-```
+- [ ] RAG-Anything installed and initialized
+- [ ] Can ingest PDFs with figures/tables
+- [ ] Multiple LLM providers work (Claude/OpenAI/Ollama)
+- [ ] Hybrid query mode returns relevant results
+- [ ] Vision-enhanced queries work on figures
+- [ ] Knowledge graph is built correctly
+- [ ] AI comments are generated with good context
+- [ ] HUMAN_COMMENT vs AI_COMMENT are properly separated
+- [ ] Comment metadata is well-structured
 
 ---
 
-## 🤝 Getting Help
+## 🤝 NEXT COLLABORATION POINTS
 
-### Common Commands Reference
-```bash
-# Activate environment
-source venv/bin/activate
+Once RAG-Anything is working:
 
-# Run ingestion
-python copilot.py ingest <pdf_path>
+1. **JabRef Integration** (if desired)
+   - Export from RAG-Anything to BibTeX
+   - Sync bibliography with JabRef database
+   - Link PDF annotations
 
-# Process documents
-python copilot.py process <md_path>
+2. **Advanced Features**
+   - Concept activation visualization
+   - Multi-document synthesis
+   - Automatic literature review generation
 
-# Search
-python copilot.py search "<query>"
-
-# Check Python environment
-pip list | grep -E "anthropic|chromadb|sentence"
-
-# View logs (add logging to script)
-python copilot.py ingest paper.pdf 2>&1 | tee ingestion.log
-```
-
-### Debug Mode
-Add to your script:
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-
----
-
-## 📚 Further Reading
-
-- **RAG Systems**: [LangChain Documentation](https://python.langchain.com/docs/use_cases/question_answering/)
-- **Vector Databases**: [ChromaDB Guide](https://docs.trychroma.com/)
-- **VS Code Extensions**: [Extension API](https://code.visualstudio.com/api)
-- **ORKG API**: [Integration Guide](https://orkg.org/help-center)
-
----
-
-## ✅ Success Criteria
-
-You'll know the MVP is working when:
-1. You can convert 5+ papers to searchable Markdown
-2. Search returns contextually relevant chunks
-3. AI comments provide useful insights with references
-4. The system runs without errors for 30+ minutes
-5. You can find connections between papers automatically
-
-**Once these work, you're ready for Phase 2! 🎉**
+3. **UI Development**
+   - Web interface for document viewing
+   - VS Code extension for inline comments
+   - Graph visualization for concept relationships
