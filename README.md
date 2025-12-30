@@ -24,8 +24,8 @@ Documents annotation, with citation helper and RAG-based documents linking and d
 
 4️⃣ Comment & Annotation System
 - Use HTML-style comments in Markdown:
-  <!-- HUMAN_COMMENT: ... -->
-  <!-- AI_COMMENT: ... -->
+  # <!-- HUMAN_COMMENT: ... -->
+  # <!-- AI_COMMENT: ... -->
 - Extend metadata for linking to file hunks:
   type, target_id (section/paragraph), start_line, timestamp, linked_papers, concepts
 - Parse and filter comments by type
@@ -64,7 +64,7 @@ Documents annotation, with citation helper and RAG-based documents linking and d
 - Inline decorations & hover tooltips for linked comments
 - Accept/edit/delete AI comments UI
 
-9️⃣ Linking Comments to Hunks
+9️⃣ Linking Comments to chunks
 - Use line numbers, target_id, or character offsets to link comments
 - Assign target_id to each section or paragraph
 - Highlight linked sections when selecting a comment
