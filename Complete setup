@@ -1,0 +1,341 @@
+#!/bin/bash
+# Complete Setup Script for Literature Review Copilot
+# This script sets up both the Python backend and VS Code extension
+
+set -e  # Exit on error
+
+echo "================================================"
+echo "Literature Review Copilot - Complete Setup"
+echo "================================================"
+echo ""
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Check prerequisites
+check_command() {
+    if ! command -v $1 &> /dev/null; then
+        echo -e "${RED}✗ $1 not found${NC}"
+        return 1
+    else
+        echo -e "${GREEN}✓ $1 found${NC}"
+        return 0
+    fi
+}
+
+echo "Checking prerequisites..."
+check_command python3 || exit 1
+check_command node || exit 1
+check_command npm || exit 1
+check_command code || echo -e "${YELLOW}⚠ VS Code command 'code' not found. Install from Command Palette: Shell Command: Install 'code' command in PATH${NC}"
+
+echo ""
+echo "================================================"
+echo "Step 1: Python Backend Setup"
+echo "================================================"
+echo ""
+
+# Create project directory
+PROJECT_DIR="${1:-literature-review-copilot}"
+echo "Creating project directory: $PROJECT_DIR"
+mkdir -p "$PROJECT_DIR"
+cd "$PROJECT_DIR"
+
+# Create virtual environment
+echo "Creating Python virtual environment..."
+python3 -m venv venv
+source venv/bin/activate
+
+# Install Python dependencies
+echo "Installing Python dependencies (this may take a few minutes)..."
+pip install --upgrade pip
+pip install raganything[all] lightrag-hku anthropic openai bibtexparser
+
+# Check for optional dependencies
+echo ""
+echo "Checking optional dependencies..."
+if pip install magic-pdf[full] 2>/dev/null; then
+    echo -e "${GREEN}✓ MinerU installed (high-quality PDF parsing)${NC}"
+else
+    echo -e "${YELLOW}⚠ MinerU installation failed. Using fallback parser.${NC}"
+    pip install docling
+fi
+
+# Create directory structure
+echo ""
+echo "Creating directory structure..."
+mkdir -p documents imports rag_storage assets
+
+# Create copilot.py (placeholder - user should paste actual code)
+if [ ! -f "copilot.py" ]; then
+    cat > copilot.py << 'EOF'
+# TODO: Paste the copilot.py code from the artifact here
+# Or download from your repository
+
+print("copilot.py placeholder - replace with actual code")
+EOF
+    echo -e "${YELLOW}⚠ Created copilot.py placeholder - you need to add the actual code${NC}"
+fi
+
+# Create .env file template
+cat > .env << 'EOF'
+# LLM Configuration
+LLM_PROVIDER=claude  # Options: claude, openai, ollama
+ANTHROPIC_API_KEY=your-anthropic-key-here
+OPENAI_API_KEY=your-openai-key-here
+OLLAMA_BASE_URL=http://localhost:11434/v1
+
+# JabRef Integration (optional)
+JABREF_LIBRARY=./literature.bib
+JABREF_AUTO_SYNC=true
+JABREF_PDF_PATH=./pdfs
+EOF
+
+echo -e "${GREEN}✓ Created .env template${NC}"
+echo -e "${YELLOW}⚠ Edit .env file with your API keys${NC}"
+
+# Create .gitignore
+cat > .gitignore << 'EOF'
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Environment
+.env
+.env.local
+
+# RAG Storage
+rag_storage/
+vector_db/
+
+# Temporary
+*.log
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# JabRef
+*.bak
+EOF
+
+echo -e "${GREEN}✓ Created .gitignore${NC}"
+
+# Test Python setup
+echo ""
+echo "Testing Python environment..."
+python -c "import raganything; print('✓ RAG-Anything imported successfully')" || echo -e "${RED}✗ RAG-Anything import failed${NC}"
+python -c "import lightrag; print('✓ LightRAG imported successfully')" || echo -e "${RED}✗ LightRAG import failed${NC}"
+
+echo ""
+echo "================================================"
+echo "Step 2: VS Code Extension Setup"
+echo "================================================"
+echo ""
+
+# Check if npm global packages needed
+if ! command -v yo &> /dev/null; then
+    echo "Installing Yeoman and VS Code generator..."
+    npm install -g yo generator-code
+else
+    echo -e "${GREEN}✓ Yeoman already installed${NC}"
+fi
+
+# Create extension directory
+EXTENSION_DIR="literature-review-vscode"
+if [ -d "$EXTENSION_DIR" ]; then
+    echo -e "${YELLOW}⚠ Extension directory already exists: $EXTENSION_DIR${NC}"
+    read -p "Remove and recreate? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        rm -rf "$EXTENSION_DIR"
+    else
+        echo "Skipping extension setup"
+        exit 0
+    fi
+fi
+
+echo "Creating VS Code extension..."
+mkdir -p "$EXTENSION_DIR"
+cd "$EXTENSION_DIR"
+
+# Create package.json
+cat > package.json << 'PACKAGEJSON'
+{
+  "name": "literature-review-copilot",
+  "displayName": "Literature Review Copilot",
+  "description": "AI-powered literature review with RAG-based document linking",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other", "Machine Learning"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "literatureReview",
+          "title": "Literature Review",
+          "icon": "$(book)"
+        }
+      ]
+    },
+    "views": {
+      "literatureReview": [
+        {
+          "id": "literatureReviewComments",
+          "name": "Comments"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "literatureReview.ingestDocument",
+        "title": "Ingest Document",
+        "category": "Literature Review"
+      },
+      {
+        "command": "literatureReview.generateComments",
+        "title": "Generate AI Comments",
+        "category": "Literature Review"
+      },
+      {
+        "command": "literatureReview.search",
+        "title": "Search Documents",
+        "category": "Literature Review"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.x",
+    "typescript": "^5.3.3"
+  }
+}
+PACKAGEJSON
+
+# Create tsconfig.json
+cat > tsconfig.json << 'TSCONFIG'
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2020",
+    "outDir": "out",
+    "lib": ["ES2020"],
+    "sourceMap": true,
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", ".vscode-test"]
+}
+TSCONFIG
+
+# Create src directory
+mkdir -p src
+
+# Create placeholder extension.ts
+cat > src/extension.ts << 'EXTENSIONTS'
+// TODO: Paste the extension.ts code from the artifact here
+import * as vscode from 'vscode';
+
+export function activate(context: vscode.ExtensionContext) {
+    console.log('Literature Review Copilot activated!');
+    vscode.window.showInformationMessage('Literature Review Copilot is ready!');
+    
+    // Add your commands here
+}
+
+export function deactivate() {}
+EXTENSIONTS
+
+echo -e "${YELLOW}⚠ Created extension.ts placeholder - you need to add the actual code${NC}"
+
+# Install npm dependencies
+echo "Installing npm dependencies..."
+npm install
+
+# Compile TypeScript
+echo "Compiling TypeScript..."
+npm run compile
+
+cd ..
+
+echo ""
+echo "================================================"
+echo "Setup Complete! 🎉"
+echo "================================================"
+echo ""
+echo "📁 Project Structure:"
+echo "  $PROJECT_DIR/"
+echo "  ├── copilot.py              (Python backend - ADD CODE HERE)"
+echo "  ├── venv/                   (Python virtual environment)"
+echo "  ├── documents/              (Processed Markdown files)"
+echo "  ├── imports/                (Original PDFs)"
+echo "  ├── rag_storage/            (RAG-Anything data)"
+echo "  ├── .env                    (Configuration - ADD API KEYS)"
+echo "  └── literature-review-vscode/  (VS Code extension)"
+echo "      ├── src/extension.ts    (Extension code - ADD CODE HERE)"
+echo "      └── package.json"
+echo ""
+echo "⚠️  IMPORTANT: Complete these steps:"
+echo ""
+echo "1. Add your API key to .env:"
+echo "   cd $PROJECT_DIR"
+echo "   nano .env  # or use your preferred editor"
+echo ""
+echo "2. Add copilot.py code:"
+echo "   # Copy the code from the 'Literature Review Copilot - MVP' artifact"
+echo "   nano copilot.py"
+echo ""
+echo "3. Add extension.ts code:"
+echo "   cd literature-review-vscode"
+echo "   # Copy the code from the 'VS Code Extension' artifact"
+echo "   nano src/extension.ts"
+echo ""
+echo "4. Test the Python backend:"
+echo "   cd $PROJECT_DIR"
+echo "   source venv/bin/activate"
+echo "   python copilot.py ingest sample.pdf"
+echo ""
+echo "5. Test the VS Code extension:"
+echo "   cd literature-review-vscode"
+echo "   code ."
+echo "   # Press F5 to launch Extension Development Host"
+echo ""
+echo "📚 Documentation:"
+echo "  - Setup Guide: See 'RAG-Anything Setup Guide' artifact"
+echo "  - VS Code Extension: See 'VS Code Extension - Setup & Development Guide' artifact"
+echo "  - Implementation Plan: See 'Updated Implementation Plan' artifact"
+echo ""
+echo "🔗 Useful Commands:"
+echo "  # Activate Python environment"
+echo "  cd $PROJECT_DIR && source venv/bin/activate"
+echo ""
+echo "  # Run Python backend"
+echo "  python copilot.py ingest document.pdf"
+echo "  python copilot.py search \"your query\" hybrid"
+echo ""
+echo "  # Build VS Code extension"
+echo "  cd literature-review-vscode && npm run compile"
+echo ""
+echo "Happy researching! 📖✨"
